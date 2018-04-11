@@ -106,3 +106,6 @@ class ExchangeRelease(Exchange):
             fileperms=(S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH),
             dirperms=(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH))
         self.log.info("Released as: {} {}".format(self.course_id, self.coursedir.assignment_id))
+
+    def notify_proxy(self):
+        pass

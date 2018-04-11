@@ -11,6 +11,7 @@ from traitlets import Bool
 from .exchange import Exchange
 from ..utils import get_username, check_mode, find_all_notebooks
 
+import shutil
 
 class ExchangeSubmit(Exchange):
 
@@ -136,3 +137,31 @@ class ExchangeSubmit(Exchange):
         self.log.info("Submitted as: {} {} {}".format(
             self.course_id, self.coursedir.assignment_id, str(self.timestamp)
         ))
+
+    def notify_proxy(self):
+        self.log.info("Will notify proxy about {}".format(self.src_path))
+
+        try:
+            dest_path = os.path.join(self.inbound_path, self.assignment_filename)
+            payload = {"student": os.getenv('JUPYTERHUB_USER'), "assignmentFilename": self.assignment_filename,
+                    "path": dest_path, "courseId": self.course_id, "assignmentId": self.coursedir.assignment_id}
+
+            self.log.info("Will send to proxy: {}".format(payload))
+
+            response = self.post(payload)
+
+            self.log.info("Proxy responded with status {}".format(str(response.status_code)))
+            if response.status_code == 200:
+                self.log.info("response headers: {}\n response body {}".format(response.headers, response.text))
+                body = response.json()
+                self.log.info("Parsed response body: {}\n".format(body))
+                feedback_path = '/home/{username}/assignments/feedback/'.format(username=os.getenv('JUPYTERHUB_USER')) + (body['path'] if 'path' in body else None)
+
+                feedback_filename = self.coursedir.assignment_id
+                target_path = self.src_path + '/{filename}.html'.format(filename=feedback_filename)
+                self.log.info("Target path {}, {}".format(self.src_path, target_path))
+
+                if shutil.move(feedback_path, target_path) != target_path:
+                    self.log.error('Could not copy feedback file to user\'s folder')
+        except Exception as e:
+            self.log.error('Could not submit for grading. {}'.format(str(e)))

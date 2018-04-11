@@ -56,6 +56,9 @@ class ExchangeList(Exchange):
     def copy_files(self):
         pass
 
+    def notify_proxy(self):
+        pass
+
     def parse_assignments(self):
         assignments = []
         for path in self.assignments:

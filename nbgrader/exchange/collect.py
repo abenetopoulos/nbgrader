@@ -55,6 +55,9 @@ class ExchangeCollect(Exchange):
     def init_dest(self):
         pass
 
+    def notify_proxy(self):
+        pass
+
     def copy_files(self):
         if len(self.src_records) == 0:
             self.log.warning("No submissions of '{}' for course '{}' to collect".format(

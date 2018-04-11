@@ -1,5 +1,6 @@
 import os
 import datetime
+import requests
 import sys
 import shutil
 
@@ -117,9 +118,22 @@ class Exchange(LoggingConfigurable):
         """Actually do the file transfer."""
         raise NotImplementedError
 
+    def notify_proxy(self):
+        """Notify the monitor that a file has been submitted to the exchange"""
+        raise NotImplementedError
+
     def do_copy(self, src, dest):
         """Copy the src dir to the dest dir omitting the self.coursedir.ignore globs."""
         shutil.copytree(src, dest, ignore=shutil.ignore_patterns(*self.coursedir.ignore))
+
+    def post(self, payload):
+        target = os.getenv('GRADING_PROXY_ADDR')
+        response = requests.post(target, json=payload)
+
+        if (response.status_code != 200):
+            self.log.error("POST request failed: {}".format(response.reason))
+
+        return response
 
     def start(self):
         if sys.platform == 'win32':
@@ -131,3 +145,5 @@ class Exchange(LoggingConfigurable):
         self.init_src()
         self.init_dest()
         self.copy_files()
+
+        self.notify_proxy()

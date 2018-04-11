@@ -66,3 +66,6 @@ class ExchangeFetch(Exchange):
         self.log.info("Destination: {}".format(self.dest_path))
         self.do_copy(self.src_path, self.dest_path)
         self.log.info("Fetched as: {} {}".format(self.course_id, self.coursedir.assignment_id))
+
+    def notify_proxy(self):
+        pass
